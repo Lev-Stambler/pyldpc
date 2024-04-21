@@ -2,6 +2,7 @@
 import numpy as np
 import warnings
 from . import utils
+import numpy.typing as npt
 
 from numba import njit, int64, types, float64
 
@@ -58,6 +59,14 @@ def decode(H, y, snr, maxiter=1000):
         product = utils.incode(H, x)
         if product:
             break
+
+        H = update_H(H, bits_values, nodes_values, L_posteriori)
+        bits_hist, bits_values, nodes_hist, nodes_values = utils._bitsandnodes(H)
+        # TODO: WE NEED TO UPDATE OUR THINGS ACCORDINGLY???
+        # I.e. the Lc, Lq, Lr
+        # I guess for now we can just restart...???
+
+
     if n_iter == maxiter - 1:
         warnings.warn("""Decoding stopped before convergence. You may want
                        to increase maxiter""")
@@ -66,6 +75,14 @@ def decode(H, y, snr, maxiter=1000):
 
 output_type_log2 = types.Tuple((float64[:, :, :], float64[:, :, :],
                                float64[:, :]))
+
+
+# @njit(output_type_log2(int64[:], int64[:], int64[:], int64[:], float64[:, :],
+#    float64[:, :, :],  float64[:, :, :], int64), cache=True)
+def update_H(
+    H: npt.NDArray[2], bits: npt.NDArray[2], nodes: npt.NDArray[2], L_post: npt.NDArray[1]
+):
+	raise NotImplementedError
 
 
 @njit(output_type_log2(int64[:], int64[:], int64[:], int64[:], float64[:, :],
